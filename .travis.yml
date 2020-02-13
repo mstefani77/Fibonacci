@@ -1,0 +1,20 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t mstefani77/react-test -f ./client/noProxy.Dockerfile ./client
+
+script:
+    - docker run -e CI=true mstefani77/react-test npm test
+
+after_success:
+    - docker build -t mstefani77/fib-client ./client
+    - docker build -t mstefani77/fib-nginx ./nginx
+    - docker build -t mstefani77/fib-server ./server
+    - docker build -t mstefani77/fib-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push mstefani77/fib-client
+    - docker push mstefani77/fib-nginx
+    - docker push mstefani77/fib-server
+    - docker push mstefani77/fib-worker
